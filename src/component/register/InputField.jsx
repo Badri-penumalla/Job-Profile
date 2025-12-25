@@ -1,6 +1,6 @@
 import React from 'react'
 
-const InputField = ({type, name, value, handleChange, children}) => {
+const InputField = ({type = 'text', name, value, handleChange, children}) => {
   return (
     <div className={`w-full h-10 flex justify-center items-center relative p-2 group focus-within:border-2 focus-within:rounded-sm ${value?"border-2 rounded-sm":"border-b-2"}`}>
     
