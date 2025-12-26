@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { IoMdArrowDropdown } from "react-icons/io";
 import { RxCross1 } from "react-icons/rx";
 
-const DropDown = ({dropDownOpt, nameofEle, handleClickDrop, selectedEle, setFormData}) => {
+const DropDown = ({dropDownOpt, nameofEle, selectedEle, setFormData, singleSelect = false}) => {
     const [ShowDrop, setShowDrop] = useState(false)
     // console.log(nameofEle);
     console.log(selectedEle);
@@ -10,46 +10,63 @@ const DropDown = ({dropDownOpt, nameofEle, handleClickDrop, selectedEle, setForm
         setShowDrop(!ShowDrop)
     }
     const [dd, SetDd] = useState(dropDownOpt)
-    const handleClick=(val)=>{
-        SetDd(dd.filter((ele)=>ele!=val))
-    }
-    const handleDeleteClick=(e, val)=>{
+    const handleSelect=(e, val)=>{
         e.stopPropagation()
-        SetDd([...dd, val])
-        setFormData((preVal)=>({...preVal, [nameofEle]:preVal[nameofEle].filter((ele)=>ele!=val)}))
+
+        if(singleSelect){
+            setFormData((prev)=>({...prev,[nameofEle]: val}))
+            SetDd(dd.filter((opt)=>opt!==val))
+            setShowDrop(false)
+        }else{
+            if(selectedEle.includes(val)) return;
+            setFormData((prev)=>({...prev,[nameofEle]:[...prev[nameofEle], val]}))
+            SetDd(dd.filter((opt)=>opt!==val))
+        }
     }
+    const handleDelete=(e, val)=>{
+        e.stopPropagation()
+        setFormData((prev)=>({...prev,[nameofEle]: singleSelect? "" :prev[nameofEle].filter((ele)=>ele!==val)}))
+        SetDd([...dd, val])
+    }
+
+    const isEmpty = singleSelect ? !selectedEle : selectedEle.length === 0;
+    const selectedArray = singleSelect ? (selectedEle ? [selectedEle] : []) : selectedEle;
   return (
-    <div className='border-b-2 h-10 w-full relative py-2' onClick={handleDrop}>
-        <div className='size-full flex justify-between items-center px-3'>
+    <div className='border-b-2 min-h-10 w-full relative py-2' onClick={handleDrop}>
+        <div className='size-full flex justify-between items-center px-3 cursor-pointer'>
             <div className='overflow-x-scroll'>
-                {
-                    selectedEle.length==0?<span className='capitalize'>{nameofEle}</span>:<div className='flex gap-5'>
+                {isEmpty ? (
+                    <span className='capitalize'>{nameofEle}</span> 
+                ) : (
+                    <div className='flex flex-nowrap items-center gap-2'>
                         {
-                            selectedEle.map((ele,index)=>
+                            selectedArray.map((ele,index)=>
                                 <span key={index} className='w-full flex items-center gap-2 uppercase text-nowrap min-w-fit bg-gray-200 rounded-2xl p-2 mb-2'>
                                     {ele}<RxCross1 className='text-red-300 flex items-center' onClick={(e)=>{
-                                        handleDeleteClick(e,ele)
+                                        handleDelete(e,ele)
                                     }}/>
                                 </span>
                             )
                         }
                     </div>
-                }
+                )}
             </div>
+
             <span className={`duration-100 ${ShowDrop?"rotate-180":"rotate-0"}`}><IoMdArrowDropdown /></span>
         </div>
         
         <div>
             {ShowDrop && <div className='absolute z-50 shadow-lg border-gray-300 bg-gray-100 rounded-br-2xl rounded-bl-2xl border-2 w-full top-9.5 max-h-60 overflow-y-scroll'>
                 {
-                    dd.map((opt, index)=><div key={index} className='w-full min-h-3 p-3 hover:bg-gray-300 cursor-pointer' onClick={(e)=>{
-                        handleClickDrop(e, nameofEle, opt)
-                        handleClick(opt)
-                        }}>
+                    dd.map((opt, index)=>(
+                    <div key={index} className='w-full min-h-3 p-3 hover:bg-gray-300 cursor-pointer' onClick={(e)=>{
+                        handleSelect(e, opt)}
+                        }>
                             <span className='uppercase font-medium text-sm'>
                                 {opt}    
                             </span>    
-                        </div>)
+                        </div>
+                    ))
                 }
             </div>
             }
