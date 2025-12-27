@@ -12,6 +12,8 @@ import { HiOutlineBuildingLibrary } from "react-icons/hi2";
 import { validatePassword } from 'val-pass';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import userServices from '../../service/userServices';
+import useUserContext from '../hooks/useUserContext';
 
 const Register = () => {
   const [formData, setFormData] = useState(
@@ -30,9 +32,11 @@ const Register = () => {
     }
   )
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   let [errorMessage, setErrorMessage] = useState("");
+
+  const [isBlack, setIsBlack] = useState(false);
 
   let {validateAll} = validatePassword(formData.password, 8)
   
@@ -45,6 +49,18 @@ const Register = () => {
           setErrorMessage("");
         } 
     }
+
+    if(name == 'confirmPassword'){
+      if(value!=""){
+        if(value !== formData.password){
+          setIsBlack(true)
+        }else{
+          setIsBlack(false)
+        }
+      }else{
+        setIsBlack(false)
+      }
+    }
     
     // setFormData((preVal)=>({...preVal, [name]:value}));
     setFormData((prev)=>({
@@ -53,7 +69,10 @@ const Register = () => {
     }))
   }
   
-  const handleSubmit = (e) => {
+  const {isLoading} = useUserContext();
+  console.log(isLoading);
+  
+  const handleSubmit = async(e) => {
     e.preventDefault()
     let {name, email, mobile, password, confirmPassword, positionApplyingFor, skills, yearOfPassout, joinedInstitute, instituteName, college} = formData;
     
@@ -76,16 +95,28 @@ const Register = () => {
 
     console.log(formData);
 
-    navigate("/verify-otp", {
-      state: {
-        email: formData.email
+    try{
+      let {data, status} = await userServices.registerUser(formData);
+      if(status == '201'){
+        toast.success(`${data.message}`);
+          navigate("/verify-otp", {
+            state: {
+              email: formData.email,
+              userId: data.userId
+            }
+          })
       }
-    })
+    }catch(error){
+      console.log(error);
+      toast.error("something went wrong");
+    }
   }
 
+  // console.log(errorMessage);
+  
   return (
     <div className='size-full flex justify-center items-center bg-gray-50'>
-      <div className='w-1/3 h-9/10 rounded-2xl p-10 shadow-2xl overflow-y-scroll max-md:w-1/2 max-sm:w-9/10'>
+      <div className='w-1/3 h-9/10 bg-white rounded-2xl p-10 shadow-2xl overflow-y-scroll max-md:w-1/2 max-sm:w-9/10'>
         <form action="" className='w-full flex flex-col gap-5' onSubmit={handleSubmit}>
       
           <div className='w-full h-10 flex justify-center items-center'>
@@ -116,9 +147,9 @@ const Register = () => {
             <RiLockPasswordFill />
           </InputField>
           
-          <DropDown dropDownOpt={['Frontend Developer','Backend Developer','Full Stack Developer','UI/UX Designer']} nameofEle="positionApplyingFor" selectedEle={formData.positionApplyingFor} setFormData={setFormData} singleSelect={true}></DropDown>
+          <DropDown dropDownOpt={["development","testing","applicationSupport"]} nameofEle="positionApplyingFor" selectedEle={formData.positionApplyingFor} setFormData={setFormData} singleSelect={true}></DropDown>
 
-          <DropDown dropDownOpt={['html','css','js','java','advance java','react','sql','plsql']} nameofEle="skills" selectedEle={formData.skills} setFormData={setFormData}></DropDown>
+          <DropDown dropDownOpt={['JavaScript','React','Java','Python','Django']} nameofEle="skills" selectedEle={formData.skills} setFormData={setFormData}></DropDown>
           
           <InputField type="number" name="yearOfPassout" value={formData.yearOfPassout} handleChange={handleChange}>
             <LuGraduationCap />

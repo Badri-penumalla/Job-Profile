@@ -100,7 +100,7 @@ const Login = () => {
             <span>Don't have an account? </span>
             <span 
               className='text-blue-600 cursor-pointer font-semibold'
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/')}
             >
               Register
             </span>
