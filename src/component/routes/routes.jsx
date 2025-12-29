@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Login from '../login/Login';
 import Register from '../register/Register';
 import VerifyOtp from "../register/VerifyOtp";
+import Home from "../../home/Home";
 
 const routers = createBrowserRouter(
     [
@@ -14,6 +15,9 @@ const routers = createBrowserRouter(
         },{
             path: "/verify-otp",
             element: <VerifyOtp/>
+        },{
+            path: "/home",
+            element: <Home/>
         }
     ]
 )

@@ -4,6 +4,8 @@ import { MdOutlineDriveFileRenameOutline } from 'react-icons/md'
 import { useLocation, useNavigate } from 'react-router-dom'
 import userServices from '../../service/userServices'
 import toast from 'react-hot-toast'
+import useUserContext from '../hooks/useUserContext'
+import SpinnerLoader from '../../loaders/SpinnerLoader'
 
 const VerifyOtp = () => {
   let {state:{email, userId}} = useLocation();
@@ -13,6 +15,9 @@ const VerifyOtp = () => {
     userId: userId,
     otp: ""
   })
+
+  const {globalState, setGlobalState} = useUserContext();
+  console.log(globalState);
 
   const navigate = useNavigate();
 
@@ -24,17 +29,23 @@ const VerifyOtp = () => {
   let handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
+
+    setGlobalState((prev)=>({...prev,isLoading: true}))
+
     try{
       let {data, status} = await userServices.verifyUser(formData);
       if(status == '200'){
         toast.success(`${data.message}`);
+        setGlobalState((prev)=>({...prev,isLoading: false}))
           navigate("/login")
-        }else{
-          toast.error("something went wrong");
-        }
-      } catch(error){
-          toast.error("something went wrong");
+      }else{
+        toast.error("something went wrong");
+        setGlobalState((prev)=>({...prev,isLoading: false}))
       }
+    }catch(error){
+      toast.error("something went wrong");
+      setGlobalState((prev)=>({...prev,isLoading: false}))
+    }
   }
   return (
     <>
@@ -57,7 +68,10 @@ const VerifyOtp = () => {
                       </InputField>
                     </div>
 
-                    <button type='submit' className='bg-black text-white py-2 rounded-lg'>Verify & Login</button>
+                    <button type='submit' className='bg-black text-white py-2 rounded-lg flex justify-center items-center gap-4' disabled={globalState.isLoading}>{globalState.isLoading?<>
+                      <span>Verifying...</span>
+                      <span><SpinnerLoader></SpinnerLoader></span>
+                    </>: "Verify & Login"}</button>
                 </form>
             </div>
         </div>

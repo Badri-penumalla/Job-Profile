@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import userServices from '../../service/userServices';
 import useUserContext from '../hooks/useUserContext';
+import SpinnerLoader from '../../loaders/SpinnerLoader';
 
 const Register = () => {
   const [formData, setFormData] = useState(
@@ -69,9 +70,9 @@ const Register = () => {
     }))
   }
   
-  const {isLoading} = useUserContext();
-  console.log(isLoading);
-  
+  const {globalState, setGlobalState} = useUserContext();
+  console.log(globalState);
+
   const handleSubmit = async(e) => {
     e.preventDefault()
     let {name, email, mobile, password, confirmPassword, positionApplyingFor, skills, yearOfPassout, joinedInstitute, instituteName, college} = formData;
@@ -95,20 +96,24 @@ const Register = () => {
 
     console.log(formData);
 
+    setGlobalState((prev)=>({...prev,isLoading: true}))
+    
     try{
       let {data, status} = await userServices.registerUser(formData);
       if(status == '201'){
         toast.success(`${data.message}`);
-          navigate("/verify-otp", {
-            state: {
-              email: formData.email,
-              userId: data.userId
-            }
-          })
+        setGlobalState((prev)=>({...prev,isLoading: false}))
+        navigate("/verify-otp", {
+          state: {
+            email: formData.email,
+            userId: data.userId
+          }
+        })
       }
     }catch(error){
       console.log(error);
       toast.error("something went wrong");
+      setGlobalState((prev)=>({...prev,isLoading: false}))
     }
   }
 
@@ -172,7 +177,20 @@ const Register = () => {
           }
 
 
-          <button type='submit' className='bg-black text-white py-2 rounded-lg'>Register</button>
+          <button type='submit' className='bg-black text-white py-2 rounded-lg flex justify-center items-center gap-4' disabled={globalState.isLoading}>{globalState.isLoading?<>
+            <span>Registering...</span>
+            <span><SpinnerLoader></SpinnerLoader></span>
+          </>:"Register"}</button>
+
+          <div className='text-center text-sm'>
+            <span>Have an account? </span>
+            <span 
+              className='text-blue-600 cursor-pointer font-semibold'
+              onClick={() => navigate('/login')}
+            >
+              Login Here
+            </span>
+          </div>
         </form>
       </div>
     </div>

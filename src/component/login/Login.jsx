@@ -1,58 +1,63 @@
 import React, { useState } from 'react';
 import InputField from '../register/InputField';
-import { MdOutlineLock, MdOutlineMail } from 'react-icons/md';
+import { MdOutlineMail } from 'react-icons/md';
+import { VscEye, VscEyeClosed } from "react-icons/vsc";
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { validatePassword } from 'val-pass';
+import userServices from '../../service/userServices';
+import useUserContext from '../hooks/useUserContext';
+import SpinnerLoader from '../../loaders/SpinnerLoader';
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
-  
-  const [errorMessage, setErrorMessage] = useState("");
+  const [showPass, setShowPass] = useState(false)
   const navigate = useNavigate();
 
-  // Initialize password validation logic
-  const { validateAll } = validatePassword(formData.password, 8);
+  const {globalState, setGlobalState} = useUserContext();
+  console.log(globalState);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Password validation logic similar to Register.jsx
-    if (name === 'password') {
-      const { getAllValidationErrorMessage } = validatePassword(value, 8);
-      setErrorMessage(getAllValidationErrorMessage());
-      if (value === '') {
-        setErrorMessage("");
-      }
-    }
-
     setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleShowPass = () =>{
+        setShowPass(!showPass)
+    }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = formData;
 
-    // Basic Validation
     if (!email || !password) {
       toast.error("Please fill all the fields");
       return;
     }
-
-    // You can add an API call here
+    
     console.log("Logging in with:", formData);
     
-    // Simulate successful login
-    toast.success("Login Successful!");
+    setGlobalState((prev)=>({...prev,isLoading: true}))
     
-    // Navigate to dashboard or home
-    // navigate("/dashboard"); 
+    try{
+      let {data, status} = await userServices.loginUser(formData);
+      if(status == '200'){
+        toast.success(`${data.message}`);
+        setGlobalState((prev)=>({...prev,isLoading: false}))
+          navigate("/home")
+      }else{
+        toast.error("something went wrong");
+        setGlobalState((prev)=>({...prev,isLoading: false}))
+      }
+    }catch(error){
+      toast.error("something went wrong");
+      setGlobalState((prev)=>({...prev,isLoading: false}))
+    }
   };
 
   return (
@@ -69,31 +74,30 @@ const Login = () => {
             name="email" 
             value={formData.email} 
             handleChange={handleChange}
-            placeholder="Email Address"
           >
             <MdOutlineMail />
           </InputField>
 
           <div>
             <InputField 
-              type="password" 
+              type={showPass?"text":"password"} 
               name="password" 
               value={formData.password} 
               handleChange={handleChange}
-              placeholder="Password"
             >
-              <MdOutlineLock />
+              <span onClick={handleShowPass}>{!showPass?<VscEyeClosed />:<VscEye />}</span>
             </InputField>
-            {errorMessage && !validateAll() && (
-              <p className='text-red-500 text-xs mt-1'>{errorMessage}</p>
-            )}
           </div>
 
           <button 
             type='submit' 
-            className='bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors'
+            className='bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors flex justify-center items-center gap-4'
+            disabled={globalState.isLoading}
           >
-            Login
+            {globalState.isLoading?<>
+            <span>Signing in...</span>
+            <span><SpinnerLoader></SpinnerLoader></span>
+          </>:"Login"}
           </button>
 
           <div className='text-center text-sm'>
