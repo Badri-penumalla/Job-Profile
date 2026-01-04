@@ -46,17 +46,17 @@ const Login = () => {
     
     try{
       let {data, status} = await userServices.loginUser(formData);
+      console.log(data);
+      setGlobalState((prev)=>({...prev,isLoading: false}))
       if(status == '200'){
         toast.success(`${data.message}`);
-        setGlobalState((prev)=>({...prev,isLoading: false}))
+        setGlobalState((prev)=>({...prev, "user": data.user, "token": data.token}))
           navigate("/home")
-      }else{
-        toast.error("something went wrong");
-        setGlobalState((prev)=>({...prev,isLoading: false}))
       }
     }catch(error){
-      toast.error("something went wrong");
+      console.log(error);
       setGlobalState((prev)=>({...prev,isLoading: false}))
+      toast.error("something went wrong");
     }
   };
 
