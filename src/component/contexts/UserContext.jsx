@@ -6,7 +6,8 @@ const UserContext = ({children}) => {
     const [globalState, setGlobalState] = useState({
         user: null,
         token: null,
-        isLoading: false
+        isLoading: false,
+        companies:[]
     })
   return (
     <Provider value={{globalState, setGlobalState}}>
