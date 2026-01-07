@@ -30,14 +30,21 @@ const DashBoard = () => {
     let payload = {
       companyId: id
     };
+
     (async()=>{
       let data = await userServices.applyCompanies(payload, globalState.token)
       // console.log(data);
       if(data.status=='200'){
         toast.success("Applied Successfully")
-        setGlobalState((prev)=>({...prev.user, appliedCompanies:{...prev.user.appliedCompanies, selected}}))
+        // setGlobalState((prev)=>({...prev.user, appliedCompanies:{...prev.user.appliedCompanies, selected}}))
+        setGlobalState((prev) => ({
+          ...prev,
+          user: {
+            ...prev.user,
+            appliedCompanies: [...prev.user.appliedCompanies, selected]   //converting from object to array because of .some()
+          }
+        }))
       }
-      
     })()
   }
 
@@ -60,6 +67,11 @@ const DashBoard = () => {
     })()
 
   }, [])
+
+  // To check if the current selected company exists in the user's applied list
+  const isApplied = globalState.user?.appliedCompanies?.some(
+    (item) => item._id === selected?._id || item === selected?._id  //'?.' is used to handle crashes incase of no proper loading
+  );
 
   // console.log(globalState);
   console.log(selected);
@@ -105,7 +117,7 @@ const DashBoard = () => {
                     </div>
                   </div>
                       
-                  <div className='w-full h-10 bg-slate-800 rounded-2xl'>
+                  <div className='w-full h-10 bg-slate-950 hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-100 rounded-2xl'>
                     <button className='size-full flex justify-center items-center text-white font-bold cursor-pointer' onClick={()=>{
                       handleClickOpen()
                       handleSelected(ele)
@@ -214,9 +226,18 @@ const DashBoard = () => {
           </div>
 
           <div className='mt-6 pt-4 border-t border-slate-100 flex justify-end'>
-            <button  className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm ${`bg-slate-500 text-white hover:bg-slate-900 active:scale-[0.98] transition`}`} onClick={()=>{
+            {/* <button  className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm ${`bg-slate-500 text-white hover:bg-slate-900 active:scale-[0.98] transition`}`} onClick={()=>{
               handleApplyClick(selected._id)
-            }}>Apply</button>
+            }}>Apply</button> */}
+            <button disabled={isApplied} className={`rounded-full px-4 py-2 text-sm font-medium shadow-sm transition
+                ${isApplied ? "bg-green-600 text-white cursor-not-allowed opacity-80" // Style for 'Applied'
+                        : "bg-slate-500 text-white hover:bg-slate-900 active:scale-[0.98]" // Style for 'Apply'
+                }`} onClick={() => {
+                handleApplyClick(selected._id)
+              }}
+            >
+              {isApplied ? "Already Applied" : "Apply"}
+            </button>
           </div>
         </div>
       }

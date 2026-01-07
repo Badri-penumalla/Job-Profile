@@ -1,11 +1,18 @@
-import React from 'react'
-import { GoVerified, GoUnverified  } from "react-icons/go";
+import React, { useState } from 'react'
 import useUserContext from '../../component/hooks/useUserContext';
+import Logout from '../../component/portals/Logout';
+import { FiLogOut } from 'react-icons/fi';
 
-const SideNav = () => {
+const SideNav = ({closeSideNav}) => {
     const {globalState} = useUserContext();
+    const [showPortal, setShowPortal] = useState(false)
     
-    let {user:{email, name, mobile, yearOfPassout, isVerified, positionApplyingFor, college, skills, instituteName, joinedInstitute, appliedCompanies}} = globalState
+    const handleLogout = (e)=>{
+        e.stopPropagation()
+        setShowPortal(true)
+    }
+
+    let {user:{email, name, mobile, yearOfPassout, positionApplyingFor, college, skills, instituteName, joinedInstitute, appliedCompanies}} = globalState
     
   return (
     <div className='w-full h-full rounded-2xl shadow-[0px_0px_25px_1px_#0005] p-5 bg-white flex flex-col gap-5'>
@@ -59,13 +66,27 @@ const SideNav = () => {
             </div>
         </div>
         
-        <div className='flex flex-row h-30 w-100%'></div>
+        {/* <div className='flex flex-row h-30 w-100%'>
+            <button onClick={handleLogout}>Logout</button>
+        </div> */}
+        <div className='flex flex-row h-30 w-100% mt-19'>
+            <button onClick={handleLogout} className='h-10 group w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 bg-red-50 text-red-500 border border-red-100 hover:bg-red-500 hover:text-white hover:shadow-lg hover:shadow-red-200 font-bold text-sm'>
+                {/* Icon rotates slightly on hover for a nice effect */}
+                <FiLogOut className="text-lg group-hover:-translate-x-1 transition-transform" />
+                <span>Logout</span>
+            </button>
+        </div>
+
         <hr className="border-gray-100" />
 
         <div className='grow items-center justify-end flex flex-col'>
             <div className='flex justify-center text-[10px] font-bold'>TOTAL NO OF COMPANIES APPLIED</div>
             <div className='flex justify-center text-5xl'>{appliedCompanies.length}</div>
         </div>
+
+        {
+            showPortal && <Logout setShowPortal={setShowPortal}></Logout>
+        }
     </div>
   )
 }

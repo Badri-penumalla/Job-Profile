@@ -3,6 +3,7 @@ import Login from '../login/Login';
 import Register from '../register/Register';
 import VerifyOtp from "../register/VerifyOtp";
 import Home from "../../home/Home";
+import PrivateRoutes from "./privateRoutes/PrivateRoutes";
 
 const routers = createBrowserRouter(
     [
@@ -17,7 +18,7 @@ const routers = createBrowserRouter(
             element: <VerifyOtp/>
         },{
             path: "/home",
-            element: <Home/>
+            element: <PrivateRoutes><Home/></PrivateRoutes>
         }
     ]
 )
