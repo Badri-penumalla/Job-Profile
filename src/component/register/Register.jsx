@@ -148,7 +148,7 @@ const Register = () => {
             errorMessage && !validateAll() && (<p className='text-red-500 text-sm'>{errorMessage}</p>)
           }
 
-          <InputField type="password" name="confirmPassword" value={formData.confirmPassword} handleChange={handleChange}>
+          <InputField type="password" name="confirmPassword" value={formData.confirmPassword} handleChange={handleChange} isError={isBlack}>
             <RiLockPasswordFill />
           </InputField>
           
